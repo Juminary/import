@@ -270,8 +270,9 @@ body {
 }
 
 .panel-header h2 {
+    font-family: var(--font-calligraphy);
     color: var(--primary-red);
-    font-size: 1.8rem;
+    font-size: 2.5rem;
     margin-bottom: 5px;
 }
 
