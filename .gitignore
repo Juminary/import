@@ -1,0 +1,20 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+env/
+
+# Vector index (large files)
+vector_index/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store

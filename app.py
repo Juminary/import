@@ -17,9 +17,13 @@ import os
 import json
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
+from dotenv import load_dotenv
 import logging
 
 from rag_engine import ICHRAGEngine, Neo4jKnowledgeGraph
+
+# 加载.env文件
+load_dotenv()
 
 # 配置
 logging.basicConfig(level=logging.INFO)
@@ -141,6 +145,237 @@ def get_categories():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/graph/init')
+def graph_init():
+    """获取初始图谱数据"""
+    if not kg or not kg.driver:
+        return jsonify({'error': '知识图谱未连接'}), 503
+    
+    try:
+        # 获取部分节点和关系用于展示
+        with kg.driver.session() as session:
+            result = session.run("""
+                MATCH (n:Item)-[r]->(m)
+                RETURN n, r, m LIMIT 30
+            """)
+            
+            nodes = []
+            links = []
+            node_ids = set()
+            categories = set()
+            
+            for record in result:
+                n = record['n']
+                m = record['m']
+                r = record['r']
+                
+                # 处理节点
+                for node in [n, m]:
+                    if node.id not in node_ids:
+                        node_ids.add(node.id)
+                        # 确定类别
+                        category = 'Item'
+                        if 'Category' in node.labels:
+                            category = 'Category'
+                        elif 'Region' in node.labels:
+                            category = 'Region'
+                        
+                        nodes.append({
+                            'id': str(node.id),
+                            'name': node.get('name', 'Unknown'),
+                            'category': category, # ECharts category index logic needed usually, simplified here
+                            'symbolSize': 20 if category == 'Item' else 30,
+                            'draggable': True
+                        })
+                        categories.add(category)
+
+                # 处理关系
+                links.append({
+                    'source': str(n.id),
+                    'target': str(m.id),
+                    'name': type(r).__name__
+                })
+            
+            # format categories for echarts
+            unique_categories = list(categories)
+            # map node category string to index
+            for node in nodes:
+                node['category'] = unique_categories.index(node['category'])
+
+            cat_objs = [{'name': c} for c in unique_categories]
+                
+            return jsonify({
+                'nodes': nodes,
+                'links': links,
+                'categories': cat_objs
+            })
+    except Exception as e:
+        logger.error(f"图谱初始化失败: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/graph/search')
+def graph_search():
+    """搜索图谱节点 - 按优先级搜索: Item → Category → Region → Organization"""
+    if not kg or not kg.driver:
+        return jsonify({'error': '知识图谱未连接'}), 503
+    
+    query = request.args.get('q', '')
+    if not query:
+        return graph_init()
+        
+    try:
+        with kg.driver.session() as session:
+            # 按优先级依次搜索各类型节点
+            node_types = ['Item', 'Category', 'Region', 'Organization']
+            center_node = None
+            center_type = None
+            
+            for node_type in node_types:
+                result = session.run(f"""
+                    MATCH (n:{node_type}) WHERE n.name CONTAINS $q
+                    RETURN n LIMIT 1
+                """, q=query)
+                record = result.single()
+                if record and record['n']:
+                    center_node = record['n']
+                    center_type = node_type
+                    break
+            
+            if not center_node:
+                return jsonify({'nodes': [], 'links': [], 'categories': [], 'message': '未找到匹配节点'})
+            
+            # 获取中心节点的所有关联
+            result = session.run("""
+                MATCH (n) WHERE elementId(n) = $node_id
+                OPTIONAL MATCH (n)-[r]-(m)
+                RETURN n, labels(n) as n_labels, m, labels(m) as m_labels
+            """, node_id=center_node.element_id)
+            
+            nodes = []
+            links = []
+            node_ids = set()
+            
+            type_to_cat = {'Item': 0, 'Category': 1, 'Region': 2, 'Organization': 3}
+            
+            for record in result:
+                n = record['n']
+                n_labels = record['n_labels']
+                
+                # 添加中心节点
+                if n.element_id not in node_ids:
+                    node_ids.add(n.element_id)
+                    cat_idx = type_to_cat.get(center_type, 0)
+                    nodes.append({
+                        'id': n.element_id,
+                        'name': n.get('name'),
+                        'category': cat_idx,
+                        'symbolSize': 50,
+                        'itemStyle': {'color': '#C00000'}
+                    })
+                
+                m = record['m']
+                m_labels = record['m_labels'] or []
+                
+                if m:
+                    if m.element_id not in node_ids:
+                        node_ids.add(m.element_id)
+                        cat_idx = 0
+                        for label in m_labels:
+                            if label in type_to_cat:
+                                cat_idx = type_to_cat[label]
+                                break
+                        
+                        nodes.append({
+                            'id': m.element_id,
+                            'name': m.get('name'),
+                            'category': cat_idx,
+                            'symbolSize': 30
+                        })
+                    
+                    links.append({
+                        'source': n.element_id,
+                        'target': m.element_id
+                    })
+            
+            categories = [
+                {'name': '非遗项目'},
+                {'name': '类别'},
+                {'name': '地区'},
+                {'name': '保护单位'}
+            ]
+            
+            return jsonify({
+                'nodes': nodes,
+                'links': links,
+                'categories': categories
+            })
+
+    except Exception as e:
+        logger.error(f"图谱搜索失败: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/creative', methods=['POST'])
+def creative_gen():
+    """创意工坊统一接口"""
+    data = request.get_json()
+    c_type = data.get('type', '文创设计')
+    item_name = data.get('item_name', '非遗项目')
+    
+    prompt = f"请为非遗项目“{item_name}”设计一个{c_type}方案。要求：1. 结合传统元素与现代审美；2. 具有实用性或传播价值；3. 描述具体的设计理念和产品形态。"
+    
+    content = call_qwen_api(prompt)
+    
+    return jsonify({
+        'title': f"{item_name} - {c_type}方案",
+        'content': content
+    })
+
+
+@app.route('/api/wenmai', methods=['POST'])
+def wenmai_gen():
+    """文脉溯源接口"""
+    data = request.get_json()
+    project_name = data.get('project_name', '非遗项目')
+    
+    prompt = f"""请追溯非遗项目"{project_name}"的历史渊源与文化脉络。要求：
+1. 介绍该项目的起源年代和发源地
+2. 阐述其历史演变过程和重要节点
+3. 分析其与当地文化、民俗、信仰的关联
+4. 探讨其在当代的传承现状和文化价值
+5. 语言要有文化底蕴，像讲述一段历史故事"""
+    
+    content = call_qwen_api(prompt)
+    
+    return jsonify({
+        'title': f'{project_name} - 文脉溯源',
+        'content': content
+    })
+
+
+@app.route('/api/wenxue', methods=['POST'])
+def wenxue_gen():
+    """文学创作接口"""
+    data = request.get_json()
+    theme = data.get('theme', '非遗传承')
+    creation_type = data.get('type', '诗')
+    
+    type_prompts = {
+        '诗': f'请以"{theme}"为主题，创作一首七言或五言古诗。要求意境优美，富有文化韵味。',
+        '词': f'请以"{theme}"为主题，创作一首词（可选词牌：如《水调歌头》《念奴娇》《满江红》等）。要求格律工整，意境深远。',
+        '故事': f'请以"{theme}"为主题，创作一个约500字的文化故事。要求故事生动，有传承精神和时代意义。'
+    }
+    
+    prompt = type_prompts.get(creation_type, type_prompts['诗'])
+    content = call_qwen_api(prompt)
+    
+    return jsonify({
+        'title': f'{theme} - {creation_type}',
+        'content': content
+    })
 
 
 @app.route('/api/search')
