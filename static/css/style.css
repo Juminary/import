@@ -570,15 +570,14 @@ body {
     border-radius: 8px;
     cursor: pointer;
     background-color: #333;
-    /* Fallback for missing images */
+    background-size: cover;
+    background-position: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .card-img {
     width: 100%;
     height: 100%;
-    background-size: cover;
-    background-position: center;
     transition: transform 0.5s;
 }
 
