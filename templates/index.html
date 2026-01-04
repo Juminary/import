@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图谱溯文脉 · AI焕非遗 | 沉浸式数字展馆</title>
+    <meta name="description" content="中国非物质文化遗产智能问答系统 - 数字化传承与创新">
+    <!-- 引入Google Fonts: Noto Serif SC (宋体), Ma Shan Zheng (书法体) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;500;700&family=Noto+Sans+SC:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+    <!-- 纹理背景层 -->
+    <div class="texture-overlay"></div>
+
+    <!-- 动态水墨背景 (CSS模拟) -->
+    <div class="ink-bg">
+        <div class="ink-blob blob-1"></div>
+        <div class="ink-blob blob-2"></div>
+    </div>
+
+    <!-- 侧边导航栏 -->
+    <nav class="side-nav">
+        <div class="nav-logo">
+            <span class="logo-text">非遗</span>
+            <span class="logo-seal">印</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#hero" class="active" data-text="首页">首页</a></li>
+            <li><a href="#chat" data-text="问答">问答</a></li>
+            <li><a href="#explore" data-text="探索">探索</a></li>
+            <li><a href="#creative" data-text="创意">创意</a></li>
+            <li><a href="#about" data-text="关于">关于</a></li>
+        </ul>
+        <div class="nav-footer">
+            <span class="vertical-text">文化传承</span>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+
+        <!-- 首页/Hero Section -->
+        <section id="hero" class="section hero-section">
+            <div class="hero-inner">
+                <div class="hero-text">
+                    <h2 class="sub-title">习近平新时代中国特色社会主义思想概论课程实践</h2>
+                    <h1 class="main-title">
+                        <span class="char" style="animation-delay: 0.1s">图</span>
+                        <span class="char" style="animation-delay: 0.2s">谱</span>
+                        <span class="char" style="animation-delay: 0.3s">溯</span>
+                        <span class="char" style="animation-delay: 0.4s">文</span>
+                        <span class="char" style="animation-delay: 0.5s">脉</span>
+                        <br>
+                        <span class="char highlight" style="animation-delay: 0.6s">AI</span>
+                        <span class="char highlight" style="animation-delay: 0.7s">焕</span>
+                        <span class="char highlight" style="animation-delay: 0.8s">非</span>
+                        <span class="char highlight" style="animation-delay: 0.9s">遗</span>
+                    </h1>
+                    <p class="hero-desc">
+                        以知识图谱构建文化经纬，用人工智能重塑非遗新生。<br>
+                        在这里，古老的技艺与现代科技跨越时空对话。
+                    </p>
+                    <div class="hero-stats">
+                        <div class="stat-box">
+                            <span class="stat-num" id="stat-projects">3778</span>
+                            <span class="stat-label">非遗项目</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-box">
+                            <span class="stat-num" id="stat-regions">1557</span>
+                            <span class="stat-label">传承地区</span>
+                        </div>
+                    </div>
+                    <a href="#chat" class="cta-btn">
+                        <span class="btn-text">开启探索之旅</span>
+                        <span class="btn-icon">➜</span>
+                    </a>
+                </div>
+                <div class="hero-visual">
+                    <!-- 装饰圆环 -->
+                    <div class="circle-decoration"></div>
+                    <div class="hero-image-placeholder">
+                        <div class="scroll-text">
+                            天地有大美而无言<br>
+                            万物有成理而不说
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 智能问答 Section -->
+        <section id="chat" class="section chat-section">
+            <div class="section-header">
+                <h2 class="section-title">智 · 问答</h2>
+                <p class="section-subtitle">大模型 RAG 引擎驱动的非遗百科助手</p>
+            </div>
+
+            <div class="chat-interface glass-panel">
+                <div class="chat-history" id="chat-messages">
+                    <div class="message system">
+                        <div class="avatar system-avatar">AI</div>
+                        <div class="bubble">
+                            <p>夫非遗者，民族之魂也。我是您的智能助手，知晓天文地理，通晓非遗百态。</p>
+                            <p>您可以问我：</p>
+                            <div class="suggestion-chips">
+                                <span class="chip" onclick="quickAsk('苗族古歌有什么历史价值？')">苗族古歌历史价值</span>
+                                <span class="chip" onclick="quickAsk('介绍一下景德镇制瓷技艺')">景德镇制瓷技艺</span>
+                                <span class="chip" onclick="quickAsk('端午节有哪些习俗？')">端午节习俗</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-controls">
+                    <div class="input-wrapper">
+                        <input type="text" id="chat-input" placeholder="在此输入您的问题，如：昆曲的代表作有哪些？" autocomplete="off">
+                        <button id="send-btn" class="submit-btn">
+                            <span>提问</span>
+                        </button>
+                    </div>
+                    <div class="toggle-wrapper">
+                        <label class="switch">
+                            <input type="checkbox" id="use-ai" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label">开启 AI 深度解析</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 非遗探索 Section -->
+        <section id="explore" class="section explore-section">
+            <div class="section-header">
+                <h2 class="section-title">观 · 大千</h2>
+                <p class="section-subtitle">纵览三千非遗项目，寻这一脉相承</p>
+            </div>
+
+            <div class="explore-tools">
+                <div class="search-bar">
+                    <select id="search-type">
+                        <option value="name">寻名</option>
+                        <option value="category">寻类</option>
+                        <option value="region">寻地</option>
+                    </select>
+                    <input type="text" id="search-input" placeholder="输入关键词...">
+                    <button id="search-btn">搜索</button>
+                </div>
+            </div>
+
+            <div class="categories-container" id="categories-grid">
+                <!-- 类别卡片将通过JS动态加载 -->
+            </div>
+
+            <div class="results-container hidden" id="search-results">
+                <!-- 搜索结果 -->
+            </div>
+        </section>
+
+        <!-- AI创意 Section -->
+        <section id="creative" class="section creative-section">
+            <div class="section-header">
+                <h2 class="section-title">创 · 新生</h2>
+                <p class="section-subtitle">人机共创，赋予传统文化新的表达</p>
+            </div>
+
+            <div class="creative-grid">
+                <!-- 诗词卡片 -->
+                <div class="creative-card poem-card">
+                    <div class="card-bg"></div>
+                    <div class="card-content">
+                        <h3>AI 赋诗</h3>
+                        <p>输入非遗项目，生成专属古风诗词</p>
+                        <div class="input-group">
+                            <input type="text" id="poem-input" placeholder="例如：西湖龙井">
+                            <button id="poem-btn">赋诗一首</button>
+                        </div>
+                        <div class="result-display" id="poem-result">
+                            <div class="placeholder-text">笔落惊风雨，诗成泣鬼神...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 故事卡片 -->
+                <div class="creative-card story-card">
+                    <div class="card-bg"></div>
+                    <div class="card-content">
+                        <h3>AI 续文</h3>
+                        <p>基于非遗背景，创作传承故事</p>
+                        <div class="input-group">
+                            <input type="text" id="story-input" placeholder="例如：皮影戏">
+                            <button id="story-btn">讲述故事</button>
+                        </div>
+                        <div class="result-display" id="story-result">
+                            <div class="placeholder-text">一段尘封的往事即将揭开...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于 -->
+        <section id="about" class="section about-section">
+            <div class="about-inner">
+                <h2>关于本项目</h2>
+                <p>
+                    本项目旨在响应"文化自信"号召，运用 Neo4j 知识图谱、FAISS 向量检索与大型语言模型（LLM）技术，
+                    打造一个集知识查询、可视化探索与AI共创于一体的非遗保护与传播平台。
+                    <br><br>
+                    <small>© 2026 图谱溯文脉 · AI焕非遗 | 课程实践作品</small>
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        // 快捷提问辅助函数
+        function quickAsk(text) {
+            const input = document.getElementById('chat-input');
+            input.value = text;
+            document.getElementById('send-btn').click();
+        }
+    </script>
+</body>
+
+</html>

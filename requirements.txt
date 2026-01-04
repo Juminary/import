@@ -1,0 +1,28 @@
+# 非遗知识图谱AI项目依赖
+# "图谱溯文脉・AI焕非遗"
+
+# Web框架
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# 知识图谱
+neo4j>=5.0.0
+
+# 向量检索
+faiss-cpu>=1.7.4
+sentence-transformers>=2.2.0
+
+# 大模型API
+dashscope>=1.14.0  # 通义千问
+openai>=1.0.0      # OpenAI兼容接口
+
+# 数据处理
+pandas>=2.0.0
+numpy>=1.24.0
+
+# 网页爬取（可选）
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+
+# 其他
+python-dotenv>=1.0.0
